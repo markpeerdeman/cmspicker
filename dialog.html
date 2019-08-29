@@ -90,14 +90,14 @@
         let curQuery = '';
         let curOffset = 0;
         let busyAddingImages = false;
-        async function getTrendingGifs(url, apikey, rating, limit = 10, offset = 0) {
+        async function getTrendingGifs(url, apikey, format = json, rating, limit = 10, offset = 0) {
           if (apikey == '') return;
-          const response = await fetch(`${url}?key=${apikey}&limit=${limit}&offset=${offset}` + (rating === '' ? '' : `&rating=${rating}`));
+          const response = await fetch(`${url}?key=${apikey}&format=$(format)&limit=${limit}&offset=${offset}` + (rating === '' ? '' : `&rating=${rating}`));
           return await response.json();
         }
-        async function searchGifs(url, apikey, rating, query, limit = 10, offset = 0) {
+        async function searchGifs(url, apikey, format = json, rating, query, limit = 10, offset = 0) {
           if (apikey == '') return;
-          const response = await fetch(`${url}?key=${apikey}&q=${query}&limit=${limit}&offset=${offset}` + (rating === '' ? '' : `&rating=${rating}`));
+          const response = await fetch(`${url}?key=${apikey}&format=$(format)&q=${query}&limit=${limit}&offset=${offset}` + (rating === '' ? '' : `&rating=${rating}`));
           return await response.json();
         }
         function addImageToGrid (imagedata, column) {
