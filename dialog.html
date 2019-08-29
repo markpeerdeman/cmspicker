@@ -92,12 +92,12 @@
         let busyAddingImages = false;
         async function getTrendingGifs(url, apikey, format = json, rating, limit = 10, offset = 0) {
           if (apikey == '') return;
-          const response = await fetch(`${url}?key=${apikey}&format=$(format)&limit=${limit}&offset=${offset}` + (rating === '' ? '' : `&rating=${rating}`));
+          const response = await fetch(`${url}?key=${apikey}&format=${format}&limit=${limit}&offset=${offset}` + (rating === '' ? '' : `&rating=${rating}`));
           return await response.json();
         }
         async function searchGifs(url, apikey, format = json, rating, query, limit = 10, offset = 0) {
           if (apikey == '') return;
-          const response = await fetch(`${url}?key=${apikey}&format=$(format)&q=${query}&limit=${limit}&offset=${offset}` + (rating === '' ? '' : `&rating=${rating}`));
+          const response = await fetch(`${url}?key=${apikey}&format=${format}&q=${query}&limit=${limit}&offset=${offset}` + (rating === '' ? '' : `&rating=${rating}`));
           return await response.json();
         }
         function addImageToGrid (imagedata, column) {
@@ -152,8 +152,8 @@
             console.error('- error code:', error.code);
           }
           const config = JSON.parse(ui.extension.config);
-          const giphyTrendingUrl = config.giphyTrendingUrl || 'https://api.giphy.com/v1/gifs/trending';
-          const giphySearchUrl = config.giphySearchUrl || 'https://api.giphy.com/v1/gifs/search';
+          const giphyTrendingUrl = config.giphyTrendingUrl || 'https://www.rijksmuseum.nl/api/nl/collection/SK-C-5';
+          const giphySearchUrl = config.giphySearchUrl || 'https://www.rijksmuseum.nl/api/nl/collection/SK-C-5';
           const apiKey = config.apiKey || '';
           const rating = config.rating || '';
           const initialImages = 20;
