@@ -92,12 +92,12 @@
         let busyAddingImages = false;
         async function getTrendingGifs(url, apikey, format = json, limit = 10, offset = 0) {
           if (apikey == '') return;
-          const response = await fetch(`${url}?key=${apikey}&format=${format}&ps=${limit}&offset=${offset}`);
+          const response = await fetch(`${url}?key=${apikey}&format=${format}&imgonly=True&ps=${limit}&offset=${offset}`);
           return await response.json();
         }
         async function searchGifs(url, apikey, format = json, query, limit = 10, offset = 0) {
           if (apikey == '') return;
-          const response = await fetch(`${url}?key=${apikey}&format=${format}&q=${query}&ps=${limit}&offset=${offset}`);
+          const response = await fetch(`${url}?key=${apikey}&format=${format}&imgonly=True&q=${query}&ps=${limit}&offset=${offset}`);
           return await response.json();
         }
         function addImageToGrid (imagedata, column) {
