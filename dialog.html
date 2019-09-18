@@ -67,13 +67,13 @@
           <div class='input-field col s8 offset-s2'>
             <i class='material-icons prefix'>search</i>
             <input id='search_input' type='text' class='validate'>
-            <label for='search_input'>Search all GIFs</label>
+            <label for='search_input'>Search the collection</label>
           </div>
         </div>
       </div>
 
       <div class='section_images'>
-        <h4 id='title'> Trending</h4>
+        <h4 id='title'> Results</h4>
         <div class='imagerow' id='imagegrid'> 
             <div class='imagecolumn' id='images_col0'></div>
             <div class='imagecolumn' id='images_col1'></div>
@@ -90,16 +90,18 @@
         let curQuery = '';
         let curOffset = 0;
         let busyAddingImages = false;
-        async function getTrendingGifs(url, apikey, format = json, limit = 10, offset = 0) {
+
+        async function searchImages(url, apikey, format = "json", query, limit = 10, offset = 0) {
           if (apikey == '') return;
-          const response = await fetch(`${url}?key=${apikey}&format=${format}&imgonly=True&ps=${limit}&offset=${offset}`);
+          console.log(`${url}?key=${apikey}&format=${format}&q=${query}&imgonly=True&ps=${limit}&offset=${offset}`);
+          const response = await fetch(`${url}?key=${apikey}&format=${format}&q=${query}&imgonly=True&ps=${limit}&offset=${offset}`);
           return await response.json();
         }
-        async function searchGifs(url, apikey, format = json, query, limit = 10, offset = 0) {
-          if (apikey == '') return;
-          const response = await fetch(`${url}?key=${apikey}&format=${format}&imgonly=True&q=${query}&ps=${limit}&offset=${offset}`);
-          return await response.json();
+
+        function serialize(value) {
+          return JSON.stringify(value);
         }
+
         function addImageToGrid (imagedata, column) {
           let columnelt = document.getElementById('images_col' + column);
           if (columnelt === null) {
@@ -107,7 +109,7 @@
             return;
           }
           let imageelt = document.createElement('img');
-          imageelt.src = imagedata.images.fixed_width.webp;
+          imageelt.src = imagedata;
           imageelt.setAttribute("data-giphy", JSON.stringify(imagedata));
           imageelt.onclick = onClickImage;
           if (imageelt === null) {
@@ -116,13 +118,17 @@
           }
           columnelt.appendChild(imageelt);
         }
+
         function addImagesToGrid (imagearray) {
           let column = curOffset % 4; //Assuming there are 4 columns, 0-based
-          for (var item = 0; item < imagearray.length ; item++) {
-            addImageToGrid(imagearray[item], column);
+	  console.log("number of results: " + imagearray.count);
+          for (var item = 0; item < imagearray.count ; item++) {
+	    console.log("Adding image: " + imagearray.artObjects[item].webImage.url);
+            addImageToGrid(imagearray.artObjects[item].webImage.url, column);
             column = (column + 1) % 4; //Assuming there are 4 columns, 0-based
           }
         }        
+
         function clearImageGrid() {
           for (var columnnr = 0; columnnr < 4 ; columnnr++) { //Assuming there are 4 columns, 0-based
             let columnelt = document.getElementById('images_col' + columnnr);
@@ -133,17 +139,16 @@
             columnelt.innerHTML = '';
           }
         }
-        async function addAdditionalTrendingImages(url, apiKey, additionalImagesOnScroll) {
-          addImagesToGrid((await getTrendingGifs(url, apiKey, additionalImagesOnScroll, curOffset)).data);
-          curOffset += additionalImagesOnScroll;           
-        }                  
+
         async function addAdditionalSearchImages(url, apiKey, additionalImagesOnScroll) {
-          addImagesToGrid((await searchGifs(url, apiKey, curQuery, additionalImagesOnScroll, curOffset)).data);
+          addImagesToGrid((await searchImages(url, apiKey, "json", curQuery, additionalImagesOnScroll, curOffset)).data);
           curOffset += additionalImagesOnScroll;           
         }                  
+
         function onClickImage(event) {
           ui.dialog.close(event.target.getAttribute('data-giphy'));
         }        
+
         document.addEventListener('DOMContentLoaded', async () => {
           try {
             ui = await UiExtension.register();
@@ -151,43 +156,39 @@
             console.error('Failed to register extension:', error.message);
             console.error('- error code:', error.code);
           }
+
           const config = JSON.parse(ui.extension.config);
-          const giphyTrendingUrl = config.giphyTrendingUrl || 'https://www.rijksmuseum.nl/api/nl/collection/SK-C-5';
-          const giphySearchUrl = config.giphySearchUrl || 'https://www.rijksmuseum.nl/api/nl/collection/SK-C-5';
+          const giphySearchUrl = config.giphySearchUrl || 'https://www.rijksmuseum.nl/api/nl/collection';
           const apiKey = config.apiKey || '';
           const initialImages = 20;
           const additionalImages = 20;
-          const trending = await getTrendingGifs(giphyTrendingUrl, apiKey, initialImages);
-          addImagesToGrid(trending.data);
+
           curOffset += initialImages;
           document.addEventListener('scroll', async function(event) {
             const scrollposition = window.innerHeight + window.scrollY;
             const scrollheight = document.body.scrollHeight;
             if (!busyAddingImages && scrollheight - scrollposition < 200) {
+	      console.log("adding additional images");
               busyAddingImages = true;
-              if (curQuery === '') {
-                await addAdditionalTrendingImages(giphyTrendingUrl, apiKey, additionalImages);
-              } else {
-                await addAdditionalSearchImages(giphySearchUrl, apiKey, additionalImages);
-              }
+              await addAdditionalSearchImages(giphySearchUrl, apiKey, "json", curQuery, additionalImages);
               busyAddingImages = false;
             }
           });
           const searchinputelt = document.getElementById('search_input');
           searchinputelt.addEventListener('keyup', async function(event) {
               if (event.key === 'Enter') {
+	        console.log("starting search"); 
                 clearImageGrid();
+	        console.log("image grid cleared"); 
                 curQuery = searchinputelt.value;
+	        console.log("query is "+curQuery); 
                 const title = document.getElementById('title');
                 let results;
-                if (curQuery === '') {
-                  results = await getTrendingGifs(giphyTrendingUrl, apiKey, initialImages);
-                  title.innerText = 'Trending';
-                } else {
-                  results = await searchGifs(giphySearchUrl, apiKey, curQuery, initialImages);
+                  results = await searchImages(giphySearchUrl, apiKey, "json", curQuery, initialImages);
                   title.innerText = 'Results';
-                }
-                addImagesToGrid(results.data);
+	        console.log("results retrieved"); 
+                addImagesToGrid(results);
+	        console.log("images added "); 
                 curOffset += initialImages; 
               }
           });           

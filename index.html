@@ -17,7 +17,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-    <title>BloomReach CMS Picker Extension</title>
+    <title>BloomReach Rijksmuseum Picker Extension</title>
 
     <style>
       html, body {
@@ -65,12 +65,15 @@
           Removed: 'removed',
           None: 'none',
         };
+
         function deserialize(value) {
           return (value && JSON.parse(value)) || '';
         }
+
         function serialize(value) {
           return value.length ? JSON.stringify(value) : '';
         }
+
         async function init() {
           try {
             ui = await UiExtension.register();
@@ -83,6 +86,7 @@
             console.error('- error code:', error.code);
           }
         }
+
         async function initDialogButton() {
           const buttonElement = document.getElementById('open-dialog-button');
           if (mode !== 'edit') {
@@ -91,7 +95,7 @@
           }
           const curvalue = await ui.document.field.getValue();
           const options = {
-            title: 'CMS picker',
+            title: 'Rijksmuseum picker',
             url: './dialog.html',
             size: 'large',
             value: curvalue,
@@ -99,6 +103,7 @@
           buttonElement.style.display = 'block';
           buttonElement.addEventListener('click', () => showDialog(options));
         }
+
         async function showDialog(options) {
           try {
             const curvalue = await ui.document.field.getValue();
@@ -113,6 +118,7 @@
             console.error('Error after open dialog: ', error.code, error.message);
           }
         }
+
         async function updatePreview() {
           var container = document.getElementById('imported-gif');
           container.innerHTML = ''; //reset preview div
@@ -128,6 +134,7 @@
           }
           if (gif !== '') makeThumbnail(GifActions.None, container, gif);
         }
+
         function makeThumbnail(action, container, gif) {
           const img = document.createElement('img');
           img.className = 'image';
@@ -148,15 +155,17 @@
           }
           container.appendChild(img);
         }
+
         async function removeGif() {
           await ui.document.field.setValue('');
         }
+
         document.addEventListener('DOMContentLoaded', init);
       })();
     </script>
   </head>
   <body>
-    <button id="open-dialog-button">Select GIF</button>
+    <button id="open-dialog-button">Select image</button>
     <div id="imported-gif"></div>
   </body>
 </html>
